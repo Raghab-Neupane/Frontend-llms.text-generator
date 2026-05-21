@@ -1,0 +1,227 @@
+/* ===== Information Card Carousel ===== */
+
+.info-carousel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    padding: 40px 20px 50px;
+    position: relative;
+    z-index: 2;
+}
+
+/* ===== Navigation Circle Buttons ===== */
+
+.nav-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #c0c0c0;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #ffffff;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    position: relative;
+}
+
+.nav-circle:hover {
+    background: #888888;
+    transform: scale(1.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.nav-circle--left:hover {
+    transform: scale(1.15) translateX(-4px);
+}
+
+.nav-circle--right:hover {
+    transform: scale(1.15) translateX(4px);
+}
+
+.nav-circle:active {
+    transform: scale(0.95);
+    background: #666666;
+}
+
+/* ===== Carousel Viewport =====
+   The key fix: overflow-x clips the horizontal slide,
+   but we allow vertical overflow so box-shadow renders.
+   Extra horizontal padding gives space for the shadow sides. */
+
+.carousel-viewport {
+    width: 380px;
+    overflow-x: hidden;
+    overflow-y: visible;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Inner wrapper adds padding so the shadow has room
+   inside the clipped area */
+.carousel-inner {
+    padding: 20px 24px;
+}
+
+/* ===== Sliding Track ===== */
+
+.carousel-track {
+    display: flex;
+    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== Individual Card ===== */
+
+.info-card {
+    min-width: 100%;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 22px;
+    padding: 32px 36px;
+    text-align: center;
+    box-sizing: border-box;
+
+    /* Shadow is now visible because parent allows vertical overflow
+       and has horizontal padding */
+    box-shadow:
+        0 8px 28px rgba(0, 0, 0, 0.08),
+        0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* ===== Question Text ===== */
+
+.info-card__question {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111111;
+    margin: 0 0 14px 0;
+    line-height: 1.4;
+}
+
+/* ===== Answer Text ===== */
+
+.info-card__answer {
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: #4a4a4a;
+    margin: 0;
+    line-height: 1.75;
+}
+
+/* ===== Dot Indicators ===== */
+
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.carousel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: none;
+    background: #d0d0d0;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.carousel-dot--active {
+    background: #555555;
+    transform: scale(1.35);
+}
+
+.carousel-dot:hover:not(.carousel-dot--active) {
+    background: #9a9a9a;
+    transform: scale(1.15);
+}
+
+/* ===== Responsive: Tablet ===== */
+
+@media (max-width: 900px) {
+    .info-carousel {
+        gap: 24px;
+        padding: 32px 16px 40px;
+    }
+
+    .carousel-viewport {
+        width: 320px;
+    }
+
+    .carousel-inner {
+        padding: 16px 20px;
+    }
+
+    .info-card {
+        padding: 28px 28px;
+    }
+}
+
+/* ===== Responsive: Mobile ===== */
+
+@media (max-width: 600px) {
+    .info-carousel {
+        gap: 12px;
+        padding: 24px 8px 36px;
+    }
+
+    .carousel-viewport {
+        width: 260px;
+    }
+
+    .carousel-inner {
+        padding: 14px 16px;
+    }
+
+    .info-card {
+        padding: 24px 20px;
+        border-radius: 18px;
+    }
+
+    .nav-circle {
+        width: 36px;
+        height: 36px;
+    }
+
+    .nav-circle svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    .info-card__question {
+        font-size: 0.96rem;
+    }
+
+    .info-card__answer {
+        font-size: 0.88rem;
+    }
+}
+
+/* ===== Responsive: Very Small ===== */
+
+@media (max-width: 380px) {
+    .info-carousel {
+        gap: 8px;
+        padding: 20px 4px 28px;
+    }
+
+    .carousel-viewport {
+        width: 220px;
+    }
+
+    .carousel-inner {
+        padding: 12px 12px;
+    }
+
+    .nav-circle {
+        width: 32px;
+        height: 32px;
+    }
+}

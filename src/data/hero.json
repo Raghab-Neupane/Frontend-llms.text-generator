@@ -1,0 +1,25 @@
+{
+  "title": "LLMS.txt",
+  "titleAccent": "generator",
+  "subtitle": "Generate text using LLMs",
+  "ctaButton": "get started",
+  "ctaDescription": "Start to generate the llms.txt for your site.",
+  "slides": [
+    {
+      "question": "What is llms.txt generator?",
+      "answer": "llms.txt is a file that is used to generate text using LLMs."
+    },
+    {
+      "question": "Why use llms.txt?",
+      "answer": "It helps AI models understand your site structure, docs, and content more effectively."
+    },
+    {
+      "question": "How does it work?",
+      "answer": "Enter your site URL and we crawl it to produce a clean, structured llms.txt file automatically."
+    },
+    {
+      "question": "Who is it for?",
+      "answer": "Developers, documentation teams, and anyone who wants their content to be AI-ready and discoverable."
+    }
+  ]
+}
