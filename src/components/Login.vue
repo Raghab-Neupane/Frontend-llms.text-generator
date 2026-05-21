@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
@@ -13,9 +15,10 @@ function togglePassword() {
 function handleSubmit() {
   if (!email.value || !password.value) return
   isLoading.value = true
-  // Simulate API call
+  // Simulate API call then navigate
   setTimeout(() => {
     isLoading.value = false
+    router.push('/generator')
   }, 1500)
 }
 
