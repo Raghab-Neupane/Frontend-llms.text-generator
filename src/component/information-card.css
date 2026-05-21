@@ -49,14 +49,13 @@
 }
 
 /* ===== Carousel Viewport =====
-   The key fix: overflow-x clips the horizontal slide,
-   but we allow vertical overflow so box-shadow renders.
-   Extra horizontal padding gives space for the shadow sides. */
+   overflow:hidden clips everything outside the box.
+   The .carousel-inner padding gives the shadow room
+   to render inside the clipped area. */
 
 .carousel-viewport {
     width: 380px;
-    overflow-x: hidden;
-    overflow-y: visible;
+    overflow: hidden;
     position: relative;
     box-sizing: border-box;
 }

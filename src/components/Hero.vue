@@ -1,6 +1,13 @@
 <script setup>
+import { useRouter } from 'vue-router'
 import InformationCard from '../component/information-card.vue'
 import heroData from '../data/hero.json'
+
+const router = useRouter()
+
+function goToLogin() {
+  router.push('/login')
+}
 </script>
 
 <template>
@@ -31,7 +38,7 @@ import heroData from '../data/hero.json'
     <div class="bottom-section">
       <div class="diagonal-cut"></div>
       <div class="bottom-content">
-        <button class="get-started-btn">{{ heroData.ctaButton }}</button>
+        <button class="get-started-btn" @click="goToLogin">{{ heroData.ctaButton }}</button>
         <p class="bottom-text">{{ heroData.ctaDescription }}</p>
       </div>
     </div>
