@@ -7,24 +7,69 @@ const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const isLoading = ref(false)
+const errorMessage = ref('')
 
 function togglePassword() {
   showPassword.value = !showPassword.value
 }
 
-function handleSubmit() {
+async function handleSubmit() {
   if (!email.value || !password.value) return
+
   isLoading.value = true
-  // Simulate API call then navigate
-  setTimeout(() => {
+  errorMessage.value = ''
+
+  console.log('Initiating login request for email:', email.value)
+
+  try {
+    const response = await fetch(
+      'http://127.0.0.1:8000/auth/login',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: email.value,
+          password: password.value,
+        }),
+      }
+    )
+
+    console.log('Response received. Status:', response.status)
+    const data = await response.json()
+    console.log('Response body data:', data)
+
+    if (!response.ok) {
+      console.error(`Login request failed with status ${response.status}:`, data)
+      errorMessage.value = data.detail || 'Authentication failed. Please verify your credentials.'
+      return
+    }
+
+    if (data.access_token) {
+      console.log('Login successful. Saving JWT token to localStorage.')
+      localStorage.setItem(
+        'token',
+        data.access_token
+      )
+      
+      console.log('Redirecting user to generator page...')
+      router.push('/generator')
+    } else {
+      console.error('API response is missing access_token:', data)
+      errorMessage.value = 'Failed to retrieve access token from server response.'
+    }
+
+  } catch (error) {
+    console.error('Network error or exception during login request:', error)
+    errorMessage.value = 'A network error occurred. Please check your connection and try again.'
+  } finally {
     isLoading.value = false
-    router.push('/generator')
-  }, 1500)
+  }
 }
 
 function handleForgotPassword() {
-  // Navigate to forgot password flow
-  console.log('Forgot password for:', email.value)
+  console.log('Forgot password')
 }
 </script>
 
@@ -115,6 +160,16 @@ accurate, helpful responses.
         <div class="form-header">
           <h2 class="form-title">Welcome back</h2>
           <p class="form-subtitle">Sign in to your account</p>
+        </div>
+
+        <!-- Error Message Display -->
+        <div v-if="errorMessage" class="error-banner" role="alert">
+          <svg class="error-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span class="error-text">{{ errorMessage }}</span>
         </div>
 
         <form class="login-form" @submit.prevent="handleSubmit">
@@ -368,6 +423,37 @@ accurate, helpful responses.
 /* ===== Form Header ===== */
 .form-header {
   margin-bottom: 36px;
+}
+
+/* ===== Error Banner ===== */
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #fdf2f2;
+  color: #de350b;
+  border: 1px solid #f8b4b4;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  margin-bottom: 20px;
+  text-align: left;
+  animation: fadeIn 0.35s ease-in-out;
+}
+
+.error-icon {
+  flex-shrink: 0;
+  color: #de350b;
+}
+
+.error-text {
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .form-title {
