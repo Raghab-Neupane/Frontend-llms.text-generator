@@ -1,10 +1,12 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import SideMenu from '../component/side-menu.vue'
 
 const API_BASE = 'http://127.0.0.1:8000'
 
 const router = useRouter()
+const isMenuOpen = ref(false)
 
 // Dropdown state
 const showDropdown = ref(false)
@@ -19,7 +21,7 @@ function closeDropdown() {
 
 function goToPrevious() {
   closeDropdown()
-  router.push('/generator')
+  isMenuOpen.value = true
 }
 
 function handleLogout() {
@@ -277,6 +279,9 @@ function handleClear() {
         </div>
       </div>
     </main>
+
+    <!-- Slide-in History Menu -->
+    <SideMenu :is-open="isMenuOpen" @close="isMenuOpen = false" />
   </div>
 </template>
 

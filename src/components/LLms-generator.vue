@@ -1,12 +1,14 @@
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ActionCard from '../component/action-card.vue'
+import SideMenu from '../component/side-menu.vue'
 
 const router = useRouter()
+const isMenuOpen = ref(false)
 
 function goToPrevious() {
-  // Navigate to previous llms.txt files
-  console.log('View previous llms.txt')
+  isMenuOpen.value = true
 }
 
 function goToNew() {
@@ -68,6 +70,9 @@ function goToNew() {
 
     <!-- Footer hint -->
     <p class="generator-hint">Choose an option above to get started.</p>
+
+    <!-- Slide-in History Menu -->
+    <SideMenu :is-open="isMenuOpen" @close="isMenuOpen = false" />
   </section>
 </template>
 

@@ -1,0 +1,385 @@
+/* ===== Side Menu Overlay (Backdrop) ===== */
+.side-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  transition: opacity 0.3s ease;
+}
+
+/* ===== Side Menu Container ===== */
+.side-menu-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  background: #ffffff;
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.12), -2px 0 8px rgba(0, 0, 0, 0.05);
+  z-index: 1001;
+  display: flex;
+  transition: width 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+  width: 440px; /* Default width when no preview is open */
+  max-width: 95vw;
+}
+
+/* Wide state when preview is active */
+.side-menu-container.side-menu-container--wide {
+  width: 960px;
+}
+
+/* ===== Left Column: History List (380px) ===== */
+.side-menu-list-pane {
+  width: 440px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-left: 1px solid #eeeeee;
+  background: #ffffff;
+}
+
+/* Panel Header */
+.side-menu-header {
+  padding: 24px 28px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.side-menu-title-area {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.side-menu-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111111;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.side-menu-subtitle {
+  font-size: 0.82rem;
+  color: #999999;
+  margin: 0;
+  font-style: italic;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888888;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: #f5f5f5;
+  color: #111111;
+}
+
+/* Scrollable History List */
+.side-menu-history-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* History Item Card */
+.history-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #e9e9e9;
+  border-radius: 12px;
+  background: #fafafa;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.history-item:hover {
+  border-color: #111111;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.history-item--active {
+  border-color: #111111;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Icon / Logo Badge */
+.history-item-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: #111111;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.history-item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.history-item-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #111111;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-item-url {
+  font-size: 0.8rem;
+  color: #888888;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-item-time {
+  font-size: 0.75rem;
+  color: #bbbbbb;
+  margin-top: 4px;
+}
+
+/* Arrow indicator on hover */
+.history-item-arrow {
+  align-self: center;
+  color: #bbbbbb;
+  opacity: 0;
+  transition: all 0.2s ease;
+  transform: translateX(-4px);
+}
+
+.history-item:hover .history-item-arrow,
+.history-item--active .history-item-arrow {
+  opacity: 1;
+  transform: translateX(0);
+  color: #111111;
+}
+
+/* Empty State / Loading State */
+.history-loading,
+.history-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  gap: 12px;
+  color: #bbbbbb;
+}
+
+.history-empty p {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.history-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #e0e0e0;
+  border-top-color: #111111;
+  border-radius: 50%;
+  animation: menu-spin 0.7s linear infinite;
+}
+
+@keyframes menu-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===== Right Column: Preview Pane (520px) ===== */
+.side-menu-preview-pane {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-left: 1px solid #eeeeee;
+  background: #fbfbfb;
+  animation: panel-slide-in 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes panel-slide-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Preview Header */
+.preview-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #eeeeee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+}
+
+.preview-title-area {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.preview-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111111;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preview-url {
+  font-size: 0.8rem;
+  color: #888888;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+}
+
+.preview-url:hover {
+  text-decoration: underline;
+  color: #111111;
+}
+
+.preview-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.preview-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 0.8rem;
+  font-family: inherit;
+  color: #555555;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preview-btn:hover {
+  background: #f5f5f5;
+  border-color: #cccccc;
+  color: #111111;
+}
+
+.preview-btn--close {
+  background: #f5f5f5;
+  border: none;
+}
+
+.preview-btn--close:hover {
+  background: #e5e5e5;
+}
+
+/* Preview Markdown Content */
+.preview-body {
+  flex: 1;
+  overflow-y: auto;
+  background: #1a1a1a;
+}
+
+.preview-code-block {
+  padding: 24px;
+  margin: 0;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: #d4d4d4;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* ===== Transitions ===== */
+.slide-menu-enter-active,
+.slide-menu-leave-active {
+  transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.slide-menu-enter-from,
+.slide-menu-leave-to {
+  transform: translateX(100%);
+}
+
+.fade-overlay-enter-active,
+.fade-overlay-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-overlay-enter-from,
+.fade-overlay-leave-to {
+  opacity: 0;
+}
+
+/* ===== Responsive: Mobile ===== */
+@media (max-width: 900px) {
+  .side-menu-container {
+    width: 100vw;
+    max-width: 100vw;
+  }
+
+  .side-menu-container.side-menu-container--wide {
+    width: 100vw;
+  }
+
+  .side-menu-list-pane {
+    width: 100%;
+  }
+
+  /* When wide (preview active) on mobile, hide the list pane to make room for the preview pane */
+  .side-menu-container--wide .side-menu-list-pane {
+    display: none;
+  }
+
+  .side-menu-preview-pane {
+    width: 100%;
+    border-left: none;
+  }
+}
