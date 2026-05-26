@@ -1,37 +1,33 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 
-const router = useRouter()
 const email = ref('')
-const password = ref('')
-const showPassword = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref('')
-
-function togglePassword() {
-  showPassword.value = !showPassword.value
-}
+const successMessage = ref('')
 
 async function handleSubmit() {
-  if (!email.value || !password.value) return
+  if (!email.value) {
+    errorMessage.value = 'Please enter your email address.'
+    return
+  }
 
   isLoading.value = true
   errorMessage.value = ''
+  successMessage.value = ''
 
-  console.log('Initiating login request for email:', email.value)
+  console.log('Initiating forgot-password request for email:', email.value)
 
   try {
     const response = await fetch(
-      'http://127.0.0.1:8000/login',
+      'http://127.0.0.1:8000/resetlogin',
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: email.value,
-          password: password.value,
+          email: email.value
         }),
       }
     )
@@ -41,43 +37,26 @@ async function handleSubmit() {
     console.log('Response body data:', data)
 
     if (!response.ok) {
-      console.error(`Login request failed with status ${response.status}:`, data)
-      errorMessage.value = data.detail || 'Authentication failed. Please verify your credentials.'
+      console.error(`Forgot-password request failed with status ${response.status}:`, data)
+      errorMessage.value = data.detail || 'Failed to send reset link. Please check your email.'
       return
     }
 
-    if (data.access_token) {
-      console.log('Login successful. Saving JWT token to localStorage.')
-      localStorage.setItem(
-        'token',
-        data.access_token
-      )
-      
-      console.log('Redirecting user to generator page...')
-      router.push('/generator/new')
-    } else {
-      console.error('API response is missing access_token:', data)
-      errorMessage.value = 'Failed to retrieve access token from server response.'
-    }
+    successMessage.value = 'Reset email sent successfully'
 
   } catch (error) {
-    console.error('Network error or exception during login request:', error)
+    console.error('Network error or exception during forgot-password request:', error)
     errorMessage.value = 'A network error occurred. Please check your connection and try again.'
   } finally {
     isLoading.value = false
   }
 }
-
-function handleForgotPassword() {
-  console.log('Forgot password')
-  router.push('/forgot-password')
-}
 </script>
 
 <template>
-  <section class="login-page">
+  <section class="forgot-page">
     <!-- Left Panel: Branding -->
-    <div class="login-branding">
+    <div class="forgot-branding">
       <!-- Decorative Markdown Watermark -->
       <div class="md-watermark" aria-hidden="true">
         <pre class="md-text">
@@ -149,18 +128,18 @@ accurate, helpful responses.
         </div>
 
         <p class="branding-description">
-          Sign in to start generating structured<br />
-          llms.txt files for your sites.
+          Reset password to recover access to<br />
+          generating structured llms.txt files.
         </p>
       </div>
     </div>
 
-    <!-- Right Panel: Login Form -->
-    <div class="login-form-panel">
-      <div class="login-form-container">
+    <!-- Right Panel: Forgot Password Form -->
+    <div class="forgot-form-panel">
+      <div class="forgot-form-container">
         <div class="form-header">
-          <h2 class="form-title">Welcome back</h2>
-          <p class="form-subtitle">Sign in to your account</p>
+          <h2 class="form-title">Reset password</h2>
+          <p class="form-subtitle">Enter your email and we'll send you a link to reset your password</p>
         </div>
 
         <!-- Error Message Display -->
@@ -173,17 +152,26 @@ accurate, helpful responses.
           <span class="error-text">{{ errorMessage }}</span>
         </div>
 
-        <form class="login-form" @submit.prevent="handleSubmit">
+        <!-- Success Message Display -->
+        <div v-if="successMessage" class="success-banner" role="status">
+          <svg class="success-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          <span class="success-text">{{ successMessage }}</span>
+        </div>
+
+        <form v-if="!successMessage" class="forgot-form" @submit.prevent="handleSubmit">
           <!-- Email Field -->
           <div class="input-group">
-            <label class="input-label" for="login-email">Email</label>
+            <label class="input-label" for="forgot-email">Email Address</label>
             <div class="input-wrapper">
               <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               <input
-                id="login-email"
+                id="forgot-email"
                 v-model="email"
                 type="email"
                 placeholder="you@example.com"
@@ -193,53 +181,6 @@ accurate, helpful responses.
             </div>
           </div>
 
-          <!-- Password Field -->
-          <div class="input-group">
-            <label class="input-label" for="login-password">Password</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" stroke-width="1.5"/>
-                <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-              <input
-                id="login-password"
-                v-model="password"
-                :type="showPassword ? 'text' : 'password'"
-                placeholder="Enter your password"
-                required
-                autocomplete="current-password"
-              />
-              <button
-                type="button"
-                class="password-toggle"
-                @click="togglePassword"
-                :aria-label="showPassword ? 'Hide password' : 'Show password'"
-              >
-                <!-- Eye open -->
-                <svg v-if="!showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.5"/>
-                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/>
-                </svg>
-                <!-- Eye closed -->
-                <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                  <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- Forgot Password -->
-          <div class="form-options">
-            <button
-              type="button"
-              class="forgot-link"
-              @click="handleForgotPassword"
-            >
-              Forgot password?
-            </button>
-          </div>
-
           <!-- Submit Button -->
           <button
             type="submit"
@@ -247,13 +188,13 @@ accurate, helpful responses.
             :class="{ 'submit-btn--loading': isLoading }"
             :disabled="isLoading"
           >
-            <span v-if="!isLoading">Sign in</span>
+            <span v-if="!isLoading">Send reset link</span>
             <span v-else class="spinner"></span>
           </button>
         </form>
 
         <div class="form-footer">
-          <p>Don't have an account? <router-link to="/signup" class="signup-link">Create one</router-link></p>
+          <p>Remember your password? <router-link to="/login" class="login-link">Back to sign in</router-link></p>
         </div>
       </div>
     </div>
@@ -262,14 +203,14 @@ accurate, helpful responses.
 
 <style scoped>
 /* ===== Page Layout ===== */
-.login-page {
+.forgot-page {
   min-height: 100vh;
   display: flex;
   font-family: 'Inter', 'Segoe UI', sans-serif;
 }
 
 /* ===== Left Branding Panel ===== */
-.login-branding {
+.forgot-branding {
   flex: 1;
   background: #000000;
   display: flex;
@@ -280,8 +221,7 @@ accurate, helpful responses.
   overflow: hidden;
 }
 
-/* Subtle diagonal texture */
-.login-branding::before {
+.forgot-branding::before {
   content: '';
   position: absolute;
   top: -50%;
@@ -339,18 +279,10 @@ accurate, helpful responses.
 }
 
 @keyframes md-pulse {
-  0%, 100% {
-    opacity: 0.5;
-  }
-  30% {
-    opacity: 1;
-  }
-  60% {
-    opacity: 0.35;
-  }
-  80% {
-    opacity: 0.9;
-  }
+  0%, 100% { opacity: 0.5; }
+  30% { opacity: 1; }
+  60% { opacity: 0.35; }
+  80% { opacity: 0.9; }
 }
 
 .branding-content {
@@ -407,7 +339,7 @@ accurate, helpful responses.
 }
 
 /* ===== Right Form Panel ===== */
-.login-form-panel {
+.forgot-form-panel {
   flex: 1;
   background: #ffffff;
   display: flex;
@@ -416,12 +348,11 @@ accurate, helpful responses.
   padding: 48px;
 }
 
-.login-form-container {
+.forgot-form-container {
   width: 100%;
   max-width: 380px;
 }
 
-/* ===== Form Header ===== */
 .form-header {
   margin-bottom: 36px;
 }
@@ -452,6 +383,32 @@ accurate, helpful responses.
   line-height: 1.4;
 }
 
+/* ===== Success Banner ===== */
+.success-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #f3faf5;
+  color: #00875a;
+  border: 1px solid #abf5d1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  margin-bottom: 20px;
+  text-align: left;
+  animation: fadeIn 0.35s ease-in-out;
+}
+
+.success-icon {
+  flex-shrink: 0;
+  color: #00875a;
+}
+
+.success-text {
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
@@ -470,8 +427,48 @@ accurate, helpful responses.
   margin: 0;
 }
 
+/* ===== Developer Helper Box ===== */
+.dev-link-helper {
+  background: #f4f5f7;
+  border: 1px solid #dfe1e6;
+  border-left: 4px solid #0052cc;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.dev-label {
+  font-weight: bold;
+  color: #0747a6;
+  font-size: 0.9rem;
+  margin: 0 0 4px 0;
+}
+
+.dev-text {
+  color: #505f79;
+  font-size: 0.85rem;
+  margin: 0 0 12px 0;
+}
+
+.dev-link {
+  display: inline-block;
+  background: #0052cc;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.25s;
+}
+
+.dev-link:hover {
+  background: #0747a6;
+}
+
 /* ===== Form ===== */
-.login-form {
+.forgot-form {
   display: flex;
   flex-direction: column;
   gap: 22px;
@@ -531,47 +528,6 @@ accurate, helpful responses.
 
 .input-wrapper input::placeholder {
   color: #bbbbbb;
-}
-
-/* ===== Password Toggle ===== */
-.password-toggle {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #aaaaaa;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.25s ease;
-  outline: none;
-}
-
-.password-toggle:hover {
-  color: #333333;
-}
-
-/* ===== Forgot Password ===== */
-.form-options {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: -8px;
-}
-
-.forgot-link {
-  background: none;
-  border: none;
-  font-size: 0.85rem;
-  color: #888888;
-  cursor: pointer;
-  font-family: inherit;
-  padding: 0;
-  transition: color 0.2s ease;
-}
-
-.forgot-link:hover {
-  color: #111111;
-  text-decoration: underline;
 }
 
 /* ===== Submit Button ===== */
@@ -636,25 +592,25 @@ accurate, helpful responses.
   margin: 0;
 }
 
-.signup-link {
+.login-link {
   color: #111111;
   font-weight: 600;
   text-decoration: none;
   transition: opacity 0.2s ease;
 }
 
-.signup-link:hover {
+.login-link:hover {
   opacity: 0.7;
   text-decoration: underline;
 }
 
 /* ===== Responsive: Tablet ===== */
 @media (max-width: 900px) {
-  .login-page {
+  .forgot-page {
     flex-direction: column;
   }
 
-  .login-branding {
+  .forgot-branding {
     padding: 40px 32px;
     min-height: auto;
   }
@@ -671,18 +627,18 @@ accurate, helpful responses.
     margin-bottom: 0;
   }
 
-  .login-form-panel {
+  .forgot-form-panel {
     padding: 40px 32px;
   }
 
-  .login-form-container {
+  .forgot-form-container {
     max-width: 420px;
   }
 }
 
 /* ===== Responsive: Mobile ===== */
 @media (max-width: 600px) {
-  .login-branding {
+  .forgot-branding {
     padding: 32px 24px;
   }
 
@@ -699,7 +655,7 @@ accurate, helpful responses.
     display: none;
   }
 
-  .login-form-panel {
+  .forgot-form-panel {
     padding: 32px 20px;
   }
 

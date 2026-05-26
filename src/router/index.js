@@ -2,7 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import Hero from '../components/Hero.vue'
 import Login from '../components/Login.vue'
-import LLmsGenerator from '../components/LLms-generator.vue'
+import Signup from '../components/Signup.vue'
+import ForgotPassword from '../components/ForgotPassword.vue'
+import ResetPassword from '../components/ResetPassword.vue'
 import NewGenerator from '../components/NewGenerator.vue'
 
 const routes = [
@@ -19,10 +21,21 @@ const routes = [
   },
 
   {
-    path: '/generator',
-    name: 'Generator',
-    component: LLmsGenerator,
-    meta: { requiresAuth: true }
+    path: '/signup',
+    name: 'Signup',
+    component: Signup
+  },
+
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: ForgotPassword
+  },
+
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: ResetPassword
   },
 
   {
@@ -65,7 +78,7 @@ router.beforeEach((to, from, next) => {
     }
     next('/login')
   } else if ((to.name === 'Login' || to.name === 'Home') && !isExpired) {
-    next('/generator')
+    next('/generator/new')
   } else {
     next()
   }

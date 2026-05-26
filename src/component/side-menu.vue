@@ -204,7 +204,7 @@ watch(() => props.isOpen, (newVal) => {
               <div class="history-item-info">
                 <h4 class="history-item-title">{{ item.title }}</h4>
                 <p class="history-item-url">{{ getDomain(item.url) }}</p>
-                <span class="history-item-time">{{ formatDate(item.timestamp) }}</span>
+                
               </div>
               <div class="history-item-arrow">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

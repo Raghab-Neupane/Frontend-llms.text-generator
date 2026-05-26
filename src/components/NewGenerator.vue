@@ -36,6 +36,7 @@ const isGenerating = ref(false)
 const generatedContent = ref('')
 const errorMessage = ref('')
 const crawlMeta = ref(null) // stores crawl metadata (pages processed, method, etc.)
+const currentStatus = ref('Crawling and generating llms.txt...')
 
 async function handleGenerate() {
   if (!siteUrl.value.trim()) return
@@ -44,6 +45,7 @@ async function handleGenerate() {
   errorMessage.value = ''
   generatedContent.value = ''
   crawlMeta.value = null
+  currentStatus.value = 'Initializing crawl...'
 
   const token = localStorage.getItem('token')
 
@@ -68,17 +70,45 @@ async function handleGenerate() {
       throw new Error(`Crawl failed with status ${crawlResponse.status}`)
     }
 
-    const crawlData = await crawlResponse.json()
+    // Set up readable stream to process progressive status updates
+    const reader = crawlResponse.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
 
-    if (crawlData.status === 'error') {
-      throw new Error(crawlData.message || 'Crawl returned an error.')
-    }
+    while (true) {
+      const { value, done } = await reader.read()
+      if (done) break
 
-    // Store crawl metadata
-    crawlMeta.value = {
-      method: crawlData.crawl_method,
-      totalPages: crawlData.total_pages_processed,
-      pages: crawlData.processed_pages || []
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      
+      // The last element is the remaining partial line
+      buffer = lines.pop()
+
+      for (const line of lines) {
+        if (!line.trim()) continue
+        try {
+          const data = JSON.parse(line)
+          if (data.type === 'progress') {
+            currentStatus.value = data.message
+          } else if (data.type === 'error') {
+            throw new Error(data.message || 'Crawl returned an error.')
+          } else if (data.type === 'success') {
+            // Store crawl metadata
+            crawlMeta.value = {
+              method: data.crawl_method,
+              totalPages: data.total_pages_processed,
+              pages: data.processed_pages || []
+            }
+          }
+        } catch (e) {
+          if (e instanceof SyntaxError) {
+            console.error('Failed to parse line:', line, e)
+          } else {
+            throw e
+          }
+        }
+      }
     }
 
     // STEP 2: GET /llms.txt to fetch the generated file
@@ -262,7 +292,7 @@ function handleClear() {
             <div class="gen-loading-dots">
               <span></span><span></span><span></span>
             </div>
-            <p>Crawling and generating llms.txt...</p>
+            <p>{{ currentStatus }}</p>
           </div>
 
           <!-- Generated content -->

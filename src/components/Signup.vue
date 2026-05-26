@@ -5,25 +5,41 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const email = ref('')
 const password = ref('')
+const confirmPassword = ref('')
 const showPassword = ref(false)
+const showConfirmPassword = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref('')
+const successMessage = ref('')
 
 function togglePassword() {
   showPassword.value = !showPassword.value
 }
 
+function toggleConfirmPassword() {
+  showConfirmPassword.value = !showConfirmPassword.value
+}
+
 async function handleSubmit() {
-  if (!email.value || !password.value) return
+  if (!email.value || !password.value || !confirmPassword.value) {
+    errorMessage.value = 'All fields are required.'
+    return
+  }
+
+  if (password.value !== confirmPassword.value) {
+    errorMessage.value = 'Passwords do not match.'
+    return
+  }
 
   isLoading.value = true
   errorMessage.value = ''
+  successMessage.value = ''
 
-  console.log('Initiating login request for email:', email.value)
+  console.log('Initiating signup request for email:', email.value)
 
   try {
     const response = await fetch(
-      'http://127.0.0.1:8000/login',
+      'http://127.0.0.1:8000/signup',
       {
         method: 'POST',
         headers: {
@@ -41,43 +57,29 @@ async function handleSubmit() {
     console.log('Response body data:', data)
 
     if (!response.ok) {
-      console.error(`Login request failed with status ${response.status}:`, data)
-      errorMessage.value = data.detail || 'Authentication failed. Please verify your credentials.'
+      console.error(`Signup request failed with status ${response.status}:`, data)
+      errorMessage.value = data.detail || 'Signup failed. Please try again.'
       return
     }
 
-    if (data.access_token) {
-      console.log('Login successful. Saving JWT token to localStorage.')
-      localStorage.setItem(
-        'token',
-        data.access_token
-      )
-      
-      console.log('Redirecting user to generator page...')
-      router.push('/generator/new')
-    } else {
-      console.error('API response is missing access_token:', data)
-      errorMessage.value = 'Failed to retrieve access token from server response.'
-    }
+    successMessage.value = 'Signup successful! Redirecting to login page...'
+    setTimeout(() => {
+      router.push('/login')
+    }, 2000)
 
   } catch (error) {
-    console.error('Network error or exception during login request:', error)
+    console.error('Network error or exception during signup request:', error)
     errorMessage.value = 'A network error occurred. Please check your connection and try again.'
   } finally {
     isLoading.value = false
   }
 }
-
-function handleForgotPassword() {
-  console.log('Forgot password')
-  router.push('/forgot-password')
-}
 </script>
 
 <template>
-  <section class="login-page">
+  <section class="signup-page">
     <!-- Left Panel: Branding -->
-    <div class="login-branding">
+    <div class="signup-branding">
       <!-- Decorative Markdown Watermark -->
       <div class="md-watermark" aria-hidden="true">
         <pre class="md-text">
@@ -149,18 +151,18 @@ accurate, helpful responses.
         </div>
 
         <p class="branding-description">
-          Sign in to start generating structured<br />
+          Sign up to start generating structured<br />
           llms.txt files for your sites.
         </p>
       </div>
     </div>
 
-    <!-- Right Panel: Login Form -->
-    <div class="login-form-panel">
-      <div class="login-form-container">
+    <!-- Right Panel: Signup Form -->
+    <div class="signup-form-panel">
+      <div class="signup-form-container">
         <div class="form-header">
-          <h2 class="form-title">Welcome back</h2>
-          <p class="form-subtitle">Sign in to your account</p>
+          <h2 class="form-title">Create account</h2>
+          <p class="form-subtitle">Get started with a free account today</p>
         </div>
 
         <!-- Error Message Display -->
@@ -173,17 +175,26 @@ accurate, helpful responses.
           <span class="error-text">{{ errorMessage }}</span>
         </div>
 
-        <form class="login-form" @submit.prevent="handleSubmit">
+        <!-- Success Message Display -->
+        <div v-if="successMessage" class="success-banner" role="status">
+          <svg class="success-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          <span class="success-text">{{ successMessage }}</span>
+        </div>
+
+        <form class="signup-form" @submit.prevent="handleSubmit">
           <!-- Email Field -->
           <div class="input-group">
-            <label class="input-label" for="login-email">Email</label>
+            <label class="input-label" for="signup-email">Email</label>
             <div class="input-wrapper">
               <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               <input
-                id="login-email"
+                id="signup-email"
                 v-model="email"
                 type="email"
                 placeholder="you@example.com"
@@ -195,19 +206,19 @@ accurate, helpful responses.
 
           <!-- Password Field -->
           <div class="input-group">
-            <label class="input-label" for="login-password">Password</label>
+            <label class="input-label" for="signup-password">Password</label>
             <div class="input-wrapper">
               <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" stroke-width="1.5"/>
                 <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
               <input
-                id="login-password"
+                id="signup-password"
                 v-model="password"
                 :type="showPassword ? 'text' : 'password'"
-                placeholder="Enter your password"
+                placeholder="Create a password"
                 required
-                autocomplete="current-password"
+                autocomplete="new-password"
               />
               <button
                 type="button"
@@ -229,15 +240,40 @@ accurate, helpful responses.
             </div>
           </div>
 
-          <!-- Forgot Password -->
-          <div class="form-options">
-            <button
-              type="button"
-              class="forgot-link"
-              @click="handleForgotPassword"
-            >
-              Forgot password?
-            </button>
+          <!-- Confirm Password Field -->
+          <div class="input-group">
+            <label class="input-label" for="signup-confirm-password">Confirm Password</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <input
+                id="signup-confirm-password"
+                v-model="confirmPassword"
+                :type="showConfirmPassword ? 'text' : 'password'"
+                placeholder="Confirm your password"
+                required
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                @click="toggleConfirmPassword"
+                :aria-label="showConfirmPassword ? 'Hide password' : 'Show password'"
+              >
+                <!-- Eye open -->
+                <svg v-if="!showConfirmPassword" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.5"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                <!-- Eye closed -->
+                <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
           </div>
 
           <!-- Submit Button -->
@@ -247,13 +283,13 @@ accurate, helpful responses.
             :class="{ 'submit-btn--loading': isLoading }"
             :disabled="isLoading"
           >
-            <span v-if="!isLoading">Sign in</span>
+            <span v-if="!isLoading">Sign up</span>
             <span v-else class="spinner"></span>
           </button>
         </form>
 
         <div class="form-footer">
-          <p>Don't have an account? <router-link to="/signup" class="signup-link">Create one</router-link></p>
+          <p>Already have an account? <router-link to="/login" class="login-link">Sign in</router-link></p>
         </div>
       </div>
     </div>
@@ -262,14 +298,14 @@ accurate, helpful responses.
 
 <style scoped>
 /* ===== Page Layout ===== */
-.login-page {
+.signup-page {
   min-height: 100vh;
   display: flex;
   font-family: 'Inter', 'Segoe UI', sans-serif;
 }
 
 /* ===== Left Branding Panel ===== */
-.login-branding {
+.signup-branding {
   flex: 1;
   background: #000000;
   display: flex;
@@ -280,8 +316,7 @@ accurate, helpful responses.
   overflow: hidden;
 }
 
-/* Subtle diagonal texture */
-.login-branding::before {
+.signup-branding::before {
   content: '';
   position: absolute;
   top: -50%;
@@ -339,18 +374,10 @@ accurate, helpful responses.
 }
 
 @keyframes md-pulse {
-  0%, 100% {
-    opacity: 0.5;
-  }
-  30% {
-    opacity: 1;
-  }
-  60% {
-    opacity: 0.35;
-  }
-  80% {
-    opacity: 0.9;
-  }
+  0%, 100% { opacity: 0.5; }
+  30% { opacity: 1; }
+  60% { opacity: 0.35; }
+  80% { opacity: 0.9; }
 }
 
 .branding-content {
@@ -407,7 +434,7 @@ accurate, helpful responses.
 }
 
 /* ===== Right Form Panel ===== */
-.login-form-panel {
+.signup-form-panel {
   flex: 1;
   background: #ffffff;
   display: flex;
@@ -416,12 +443,11 @@ accurate, helpful responses.
   padding: 48px;
 }
 
-.login-form-container {
+.signup-form-container {
   width: 100%;
   max-width: 380px;
 }
 
-/* ===== Form Header ===== */
 .form-header {
   margin-bottom: 36px;
 }
@@ -452,6 +478,32 @@ accurate, helpful responses.
   line-height: 1.4;
 }
 
+/* ===== Success Banner ===== */
+.success-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #f3faf5;
+  color: #00875a;
+  border: 1px solid #abf5d1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  margin-bottom: 20px;
+  text-align: left;
+  animation: fadeIn 0.35s ease-in-out;
+}
+
+.success-icon {
+  flex-shrink: 0;
+  color: #00875a;
+}
+
+.success-text {
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
@@ -471,7 +523,7 @@ accurate, helpful responses.
 }
 
 /* ===== Form ===== */
-.login-form {
+.signup-form {
   display: flex;
   flex-direction: column;
   gap: 22px;
@@ -551,29 +603,6 @@ accurate, helpful responses.
   color: #333333;
 }
 
-/* ===== Forgot Password ===== */
-.form-options {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: -8px;
-}
-
-.forgot-link {
-  background: none;
-  border: none;
-  font-size: 0.85rem;
-  color: #888888;
-  cursor: pointer;
-  font-family: inherit;
-  padding: 0;
-  transition: color 0.2s ease;
-}
-
-.forgot-link:hover {
-  color: #111111;
-  text-decoration: underline;
-}
-
 /* ===== Submit Button ===== */
 .submit-btn {
   width: 100%;
@@ -636,25 +665,25 @@ accurate, helpful responses.
   margin: 0;
 }
 
-.signup-link {
+.login-link {
   color: #111111;
   font-weight: 600;
   text-decoration: none;
   transition: opacity 0.2s ease;
 }
 
-.signup-link:hover {
+.login-link:hover {
   opacity: 0.7;
   text-decoration: underline;
 }
 
 /* ===== Responsive: Tablet ===== */
 @media (max-width: 900px) {
-  .login-page {
+  .signup-page {
     flex-direction: column;
   }
 
-  .login-branding {
+  .signup-branding {
     padding: 40px 32px;
     min-height: auto;
   }
@@ -671,18 +700,18 @@ accurate, helpful responses.
     margin-bottom: 0;
   }
 
-  .login-form-panel {
+  .signup-form-panel {
     padding: 40px 32px;
   }
 
-  .login-form-container {
+  .signup-form-container {
     max-width: 420px;
   }
 }
 
 /* ===== Responsive: Mobile ===== */
 @media (max-width: 600px) {
-  .login-branding {
+  .signup-branding {
     padding: 32px 24px;
   }
 
@@ -699,7 +728,7 @@ accurate, helpful responses.
     display: none;
   }
 
-  .login-form-panel {
+  .signup-form-panel {
     padding: 32px 20px;
   }
 
